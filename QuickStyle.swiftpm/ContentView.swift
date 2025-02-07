@@ -2,11 +2,16 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
-        }
+//        TabView {
+//            LookUpView()
+//                .tabItem {
+//                    Label("Look Up", systemImage: "camera.viewfinder")
+//                }
+            
+            WardrobeView()
+                .tabItem {
+                    Label("Wardrobe", systemImage: "folder.fill")
+                }
+//        }
     }
 }
