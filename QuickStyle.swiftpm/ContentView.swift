@@ -14,5 +14,6 @@ struct ContentView: View {
                         Label("Plan & Pack", systemImage: "suitcase.rolling.fill")
                     }
             }
+            .tint(.black)
     }
 }

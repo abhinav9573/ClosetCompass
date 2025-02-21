@@ -11,12 +11,21 @@ struct LaunchScreenView: View {
         NavigationStack {
             VStack {
                 // App Logo
-                Image(systemName: "tshirt.fill") // Replace with your app logo
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 100, height: 100)
-                    .padding(.top, 50)
-                
+                if let uiImage = UIImage(named: "closet 1") {
+                        Image(uiImage: uiImage) // Initialize SwiftUI Image with UIImage
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 200, height: 200)
+                            .cornerRadius(20)
+                            .padding(.top, 50)
+                    } else {
+                        // Fallback in case the image is not found
+                        Image(systemName: "tshirt.fill") // Default system image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 100, height: 100)
+                            .padding(.top, 50)
+                    }
                 Spacer()
                 
                 // Gender Selection
@@ -64,7 +73,7 @@ struct LaunchScreenView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 30)
             }
-            .navigationTitle("Welcome") // Set the navigation title
+            .navigationTitle("Welcome to")
             .alert(isPresented: $showValidationAlert) {
                 Alert(
                     title: Text("Missing Information"),
