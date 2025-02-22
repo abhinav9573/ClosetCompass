@@ -2,33 +2,37 @@ import SwiftUI
 
 struct LaunchScreenView: View {
     @State private var wardrobeName: String = ""
-    @State private var isShowingMainApp = false // To control navigation
-    @State private var showValidationAlert = false // To show validation feedback
+    @State private var isShowingMainApp = false
+    @State private var showValidationAlert = false
     
     @EnvironmentObject private var wardrobeData: WardrobeData
     
     var body: some View {
         NavigationStack {
             VStack {
-                // App Logo
+                
                 if let uiImage = UIImage(named: "closet 1") {
-                        Image(uiImage: uiImage) // Initialize SwiftUI Image with UIImage
+                        Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFit()
                             .frame(width: 200, height: 200)
                             .cornerRadius(20)
                             .padding(.top, 50)
                     } else {
-                        // Fallback in case the image is not found
-                        Image(systemName: "tshirt.fill") // Default system image
+                        Image(systemName: "tshirt.fill")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 100, height: 100)
                             .padding(.top, 50)
                     }
+                Text("Your Personal Wardrobe Manager")
+                                   .font(.title3)
+                                   .fontWeight(.thin)
+                                   .foregroundColor(.black)
+                                   .multilineTextAlignment(.center)
+                                   .padding(.top, 10)
                 Spacer()
                 
-                // Gender Selection
                 VStack(alignment: .leading, spacing: 10) {
                     Text("What is your gender?")
                         .font(.headline)
@@ -39,8 +43,7 @@ struct LaunchScreenView: View {
                     .pickerStyle(SegmentedPickerStyle())
                 }
                 .padding(.horizontal)
-                
-                // Wardrobe Name Question
+
                 VStack(alignment: .leading, spacing: 10) {
                     Text("What is your wardrobe name?")
                         .font(.headline)
@@ -51,12 +54,12 @@ struct LaunchScreenView: View {
                 
                 Spacer()
                 
-                // Continue Button
+
                 Button(action: {
                     if wardrobeName.isEmpty {
-                        showValidationAlert = true // Show alert if wardrobe name is empty
+                        showValidationAlert = true
                     } else {
-                        isShowingMainApp = true // Navigate to the main app
+                        isShowingMainApp = true 
                     }
                 }) {
                     HStack {
@@ -66,7 +69,7 @@ struct LaunchScreenView: View {
                     .font(.headline)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(Color.blue)
+                    .background(Color.black)
                     .foregroundColor(.white)
                     .cornerRadius(10)
                 }

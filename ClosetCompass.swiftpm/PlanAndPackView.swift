@@ -1,12 +1,9 @@
 import SwiftUI
 import PhotosUI
 
-import SwiftUI
-
 struct PlanAndPackView: View {
     @State private var isShowingPlanForm = false
     @State private var trips: [Trip] = []
-    
     @EnvironmentObject private var wardrobeData: WardrobeData
     
     var body: some View {
@@ -14,7 +11,7 @@ struct PlanAndPackView: View {
             VStack {
                 Button(action: { isShowingPlanForm.toggle() }) {
                     HStack {
-                        Text("Plan a Trip")
+                        Text("Pack for a Trip")
                             .font(.headline)
                             .foregroundColor(.black)
                         Spacer()
@@ -29,7 +26,6 @@ struct PlanAndPackView: View {
                 ScrollView {
                     ForEach(trips) { trip in
                         NavigationLink(destination: TripDetailView(trip: trip)) {
-                            // Updated Trip Card UI
                             VStack(alignment: .leading, spacing: 10) {
                                 HStack {
                                     Text(trip.name)
@@ -46,8 +42,6 @@ struct PlanAndPackView: View {
                                 Text("\(trip.date.formatted(date: .abbreviated, time: .omitted)) - \(trip.days) day\(trip.days > 1 ? "s" : "")")
                                     .font(.subheadline)
                                     .foregroundColor(.gray)
-                                
-                                // Display the number of packed items
                                 Text("\(trip.packedItems.values.flatMap { $0 }.count) items packed")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
@@ -69,14 +63,23 @@ struct PlanAndPackView: View {
                             .padding(.horizontal)
                             .padding(.vertical, 5)
                         }
-                        .buttonStyle(PlainButtonStyle()) // Remove default button styling
+                        .buttonStyle(PlainButtonStyle())
+                        .contextMenu {
+                            Button(role: .destructive, action: {
+                                if let index = trips.firstIndex(where: { $0.id == trip.id }) {
+                                    trips.remove(at: index)
+                                }
+                            }) {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                     }
                 }
             }
             .navigationTitle("Plan & Pack")
             .sheet(isPresented: $isShowingPlanForm) {
                 PlanTripForm(trips: $trips)
-                    .environmentObject(wardrobeData) // Pass the environment object
+                    .environmentObject(wardrobeData)
             }
         }
     }
@@ -85,15 +88,12 @@ struct PlanAndPackView: View {
 struct PlanTripForm: View {
     @Binding var trips: [Trip]
     @Environment(\.presentationMode) var presentationMode
-    
     @EnvironmentObject private var wardrobeData: WardrobeData
-    
     @State private var tripName: String = ""
     @State private var tripDate: Date = Date()
     @State private var numberOfDays: Int = 1
     @State private var selectedItems: [String: [UIImage]] = [:]
     
-    // Computed property to check if the Save button should be enabled
     var isSaveButtonDisabled: Bool {
         tripName.isEmpty || selectedItems.values.flatMap { $0 }.isEmpty
     }
@@ -108,7 +108,6 @@ struct PlanTripForm: View {
                 }
                 
                 Section(header: Text("Pack Your Clothes")) {
-                    // Use the dynamic categories from WardrobeData
                     ForEach(wardrobeData.categories, id: \.self) { category in
                         NavigationLink(destination: CategorySelectionView(category: category, selectedItems: $selectedItems)) {
                             HStack {
@@ -130,7 +129,7 @@ struct PlanTripForm: View {
                     trips.append(newTrip)
                     presentationMode.wrappedValue.dismiss()
                 }
-                .disabled(isSaveButtonDisabled) // Disable the Save button based on validation
+                .disabled(isSaveButtonDisabled)
             )
             .navigationTitle("New Trip")
         }
@@ -144,23 +143,11 @@ struct CategorySelectionView: View {
     
     var body: some View {
         ScrollView {
-            // Two columns with a minimum width of 180
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                 ForEach(wardrobeData.wardrobeItems[category] ?? [], id: \.self) { image in
                     ZStack(alignment: .topTrailing) {
-                        // Image
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 180, height: 180) // Fixed size of 180x180
-                            .cornerRadius(10)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.black.opacity(0.2), lineWidth: 1)
-                            )
-                            .shadow(radius: 2)
+                        WardrobeCard(image: image)
                         
-                        // Checkmark for selected images
                         if selectedItems[category]?.contains(image) == true {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 20))
@@ -168,7 +155,7 @@ struct CategorySelectionView: View {
                                 .padding(5)
                                 .background(Color.white.opacity(0.8))
                                 .clipShape(Circle())
-                                .transition(.scale) // Add animation
+                                .transition(.scale)
                         }
                     }
                     .onTapGesture {
@@ -184,55 +171,70 @@ struct CategorySelectionView: View {
         .navigationTitle(category)
     }
     
-    // Toggle selection for an image
     private func toggleSelection(for image: UIImage) {
         if let index = selectedItems[category]?.firstIndex(of: image) {
-            selectedItems[category]?.remove(at: index) // Deselect
+            selectedItems[category]?.remove(at: index)
         } else {
-            selectedItems[category, default: []].append(image) // Select
+            selectedItems[category, default: []].append(image)
         }
     }
 }
 struct TripDetailView: View {
     let trip: Trip
     @State private var expandedCategories: Set<String> = []
+    @State private var selectedCategory: String? = nil
     
     var body: some View {
         Form {
             ForEach(trip.packedItems.keys.sorted(), id: \.self) { category in
-                DisclosureGroup(
-                    isExpanded: Binding(
-                        get: { expandedCategories.contains(category) },
-                        set: { isExpanded in
-                            if isExpanded {
-                                expandedCategories.insert(category)
-                            } else {
-                                expandedCategories.remove(category)
-                            }
-                        }
-                    )
-                ) {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            ForEach(trip.packedItems[category] ?? [], id: \.self) { image in
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .frame(width: 100, height: 100)
-                                    .cornerRadius(10)
-                                    .shadow(radius: 2)
-                            }
-                        }
-                    }
-                } label: {
+                Button(action: {
+                    selectedCategory = category
+                }) {
                     HStack {
                         Text(category)
                         Spacer()
                         Text("\(trip.packedItems[category]?.count ?? 0)")
                             .foregroundColor(.gray)
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.gray)
                     }
                 }
+                .buttonStyle(PlainButtonStyle())
             }
         }
         .navigationTitle(trip.name)
+        .sheet(item: $selectedCategory) { category in
+            CategoryImagesModalView(category: category, images: trip.packedItems[category] ?? [])
+        }
+    }
+}
+
+extension String: @retroactive Identifiable {
+    public var id: String { self }
+}
+
+struct CategoryImagesModalView: View {
+    let category: String
+    let images: [UIImage]
+    @Environment(\.presentationMode) var presentationMode
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                    ForEach(images, id: \.self) { image in
+                        WardrobeCard(image: image)
+                    }
+                }
+                .padding()
+            }
+            .navigationTitle(category)
+            .navigationBarItems(
+                trailing: Button("Done") {
+                    
+                    presentationMode.wrappedValue.dismiss()
+                }
+            )
+        }
     }
 }

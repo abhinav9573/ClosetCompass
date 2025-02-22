@@ -1,12 +1,12 @@
 import SwiftUI
 @main
 struct MyApp: App {
-    @StateObject private var wardrobeData = WardrobeData() // Create the environment object here
+    @StateObject private var wardrobeData = WardrobeData()
 
     var body: some Scene {
         WindowGroup {
             LaunchScreenView()
-                .environmentObject(wardrobeData) // Provide the environment object at the root level
+                .environmentObject(wardrobeData)
         }
     }
 }

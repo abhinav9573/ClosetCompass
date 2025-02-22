@@ -32,6 +32,9 @@ let package = Package(
                 .landscapeLeft,
                 .portraitUpsideDown(.when(deviceFamilies: [.pad]))
             ],
+            capabilities: [
+                .camera(purposeString: "We need access to your camera to take photos for your wardrobe.")
+            ],
             appCategory: .lifestyle
         )
     ],

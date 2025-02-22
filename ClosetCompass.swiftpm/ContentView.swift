@@ -13,6 +13,11 @@ struct ContentView: View {
                     .tabItem {
                         Label("Plan & Pack", systemImage: "suitcase.rolling.fill")
                     }
+                StyleAssistantView()
+                                .tabItem {
+                                    Label("Style Assistant", systemImage: "message.fill")
+                                }
+               
             }
             .tint(.black)
     }

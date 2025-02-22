@@ -1,29 +1,31 @@
 import SwiftUI
 import PhotosUI
 
+struct IdentifiableImage: Identifiable {
+    let id = UUID()
+    let image: UIImage
+}
+
 struct WardrobeView: View {
     var wardrobeName: String
     @State private var selectedCategory: String = "Shirts"
     @State private var isSheetPresented = false
-    @State private var selectedImage: UIImage?
-    @State private var isAddCategoryPopupPresented = false // Controls the popup visibility
+    @State private var isAddCategoryPopupPresented = false
     @State private var newCategoryName: String = ""
-    @State private var selectedImageForPopup: UIImage? = nil // For the image popup
+    @State private var selectedImageForPopup: UIImage? = nil
+    @State private var selectedImages: [UIImage] = []
+    @State private var imageToDelete: IdentifiableImage? = nil
     
     @EnvironmentObject private var wardrobeData: WardrobeData
     
     var body: some View {
         NavigationView {
             ZStack {
-                // Main Content
                 VStack(alignment: .leading) {
-                    
-                    // **Category Buttons**
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
-                            // **Add Category Button (First in the List)**
                             Button(action: {
-                                isAddCategoryPopupPresented.toggle() // Show the popup
+                                isAddCategoryPopupPresented.toggle()
                             }) {
                                 Image(systemName: "plus")
                                     .font(.system(size: 16, weight: .medium))
@@ -33,8 +35,6 @@ struct WardrobeView: View {
                                     .foregroundColor(.black)
                                     .cornerRadius(20)
                             }
-                            
-                            // **Existing Categories**
                             ForEach(wardrobeData.categories, id: \.self) { category in
                                 Button(action: {
                                     selectedCategory = category
@@ -52,50 +52,37 @@ struct WardrobeView: View {
                         .padding(.horizontal)
                         .padding(.top, 15)
                     }
-                    
-                    // **Category Title**
                     Text(selectedCategory)
                         .font(.title2)
                         .fontWeight(.semibold)
                         .padding(.leading)
                         .padding(.top, 5)
-                    
-                    // **Wardrobe Grid**
                     let gridLayout = [GridItem(.flexible()), GridItem(.flexible())]
                     
                     ScrollView {
                         LazyVGrid(columns: gridLayout, spacing: 15) {
                             ForEach(wardrobeData.wardrobeItems[selectedCategory] ?? [], id: \.self) { image in
-                                VStack {
-                                    Image(uiImage: image)
-                                        .resizable()
-                                        .frame(width: 160, height: 160) // Fixed Frame Size
-                                        .cornerRadius(10) // Adds spacing inside the card
-                                        .onTapGesture {
-                                            selectedImageForPopup = image // Show the popup
-                                        }
-                                }
-                                .frame(width: 180, height: 180) // Card size
-                                .background(Color.white) // Card background
-                                .cornerRadius(13)
-                                .shadow(radius: 2)
+                                WardrobeCard(image: image)
+                                    .onTapGesture {
+                                        selectedImageForPopup = image
+                                    }
+                                    .onLongPressGesture {
+                                        imageToDelete = IdentifiableImage(image: image)
+                                    }
                             }
                         }
-                        .padding(.horizontal,10)
+                        .padding(.horizontal, 10)
                         .padding(.top, 10)
                     }
-                    
                 }
                 .navigationTitle(wardrobeName)
                 .navigationBarTitleDisplayMode(.large)
-                .navigationBarBackButtonHidden(true) // Hide the back button
-                
-                // **Upload Button**
+                .navigationBarBackButtonHidden(true)
                 .overlay(
                     Button(action: {
                         isSheetPresented.toggle()
                     }) {
-                        Text("Upload Cloth Image")
+                        Text("Add to Wardrobe")
                             .font(.system(size: 16, weight: .bold))
                             .padding()
                             .background(Color.black)
@@ -106,29 +93,22 @@ struct WardrobeView: View {
                         .padding()
                     , alignment: .bottom
                 )
-                
-                // **Bottom Sheet**
                 .sheet(isPresented: $isSheetPresented) {
                     if #available(iOS 16.4, *) {
-                        UploadClothesSheet(selectedCategory: selectedCategory)
-                            .environmentObject(wardrobeData) // Pass the environment object
-                            .presentationDetents([.fraction(0.35)]) // Show modal at ~35% height
+                        UploadClothesSheet(selectedCategory: selectedCategory, selectedImages: $selectedImages)
+                            .environmentObject(wardrobeData)
+                            .presentationDetents([.fraction(0.35)])
                             .presentationCornerRadius(20)
                     } else {
-                        // Fallback on earlier versions
                     }
                 }
-                
-                // **Popup for Adding New Category**
                 if isAddCategoryPopupPresented {
-                    // Semi-transparent background
                     Color.black.opacity(0.4)
                         .edgesIgnoringSafeArea(.all)
                         .onTapGesture {
-                            isAddCategoryPopupPresented = false // Dismiss popup on background tap
+                            isAddCategoryPopupPresented = false
                         }
                     
-                    // Popup Content
                     VStack {
                         Text("Add New Category")
                             .font(.headline)
@@ -140,7 +120,7 @@ struct WardrobeView: View {
                         
                         HStack {
                             Button("Cancel") {
-                                isAddCategoryPopupPresented = false // Dismiss popup
+                                isAddCategoryPopupPresented = false
                             }
                             .padding()
                             .background(Color.gray.opacity(0.2))
@@ -151,7 +131,7 @@ struct WardrobeView: View {
                                 if !newCategoryName.isEmpty {
                                     wardrobeData.addCategory(newCategoryName)
                                     newCategoryName = ""
-                                    isAddCategoryPopupPresented = false // Dismiss popup
+                                    isAddCategoryPopupPresented = false
                                 }
                             }
                             .padding()
@@ -166,20 +146,16 @@ struct WardrobeView: View {
                     .background(Color.white)
                     .cornerRadius(20)
                     .shadow(radius: 10)
-                    .transition(.scale) // Add a transition effect
+                    .transition(.scale)
                 }
-                
-                // **Popup for Displaying Selected Image**
                 if let selectedImageForPopup = selectedImageForPopup {
                     ZStack {
-                        // Semi-transparent background
                         Color.black.opacity(0.5)
                             .edgesIgnoringSafeArea(.all)
                             .onTapGesture {
-                                self.selectedImageForPopup = nil // Dismiss the popup
+                                self.selectedImageForPopup = nil
                             }
                         
-                        // Popup Content
                         VStack {
                             Image(uiImage: selectedImageForPopup)
                                 .resizable()
@@ -191,9 +167,8 @@ struct WardrobeView: View {
                                 .cornerRadius(20)
                                 .shadow(radius: 10)
                             
-                            // Close Button
                             Button(action: {
-                                self.selectedImageForPopup = nil // Dismiss the popup
+                                self.selectedImageForPopup = nil
                             }) {
                                 Text("Close")
                                     .font(.headline)
@@ -204,125 +179,245 @@ struct WardrobeView: View {
                             }
                             .padding(.top, 10)
                         }
-                        .frame(width: 300, height: 400) // Adjust the size of the popup
+                        .frame(width: 300, height: 400)
                     }
-                    .transition(.opacity) // Add a smooth transition
+                    .transition(.opacity)
                 }
+            }
+            .alert(item: $imageToDelete) { identifiableImage in
+                Alert(
+                    title: Text("Remove Item"),
+                    message: Text("Do you want to remove this clothing item?"),
+                    primaryButton: .destructive(Text("Remove")) {
+                        if let index = wardrobeData.wardrobeItems[selectedCategory]?.firstIndex(of: identifiableImage.image) {
+                            wardrobeData.wardrobeItems[selectedCategory]?.remove(at: index)
+                        }
+                    },
+                    secondaryButton: .cancel()
+                )
             }
         }
     }
-}    // **Bottom Sheet View**
-    struct UploadClothesSheet: View {
-        var selectedCategory: String
-        
-        @EnvironmentObject private var wardrobeData: WardrobeData
-        
-        @State private var isImagePickerPresented = false
-        @State private var isCameraPresented = false
-        
-        var body: some View {
-            VStack {
-                Text("Upload new clothes")
-                    .font(.headline)
-                    .padding(.top)
-                
-                HStack(spacing: 20) {
-                    // **Take Photo Card**
-                    Button(action: { isCameraPresented.toggle() }) {
-                        ZStack(alignment: .topLeading) {
-                            RoundedRectangle(cornerRadius: 15)
-                                .fill(Color.gray.opacity(0.3)) // Light green background
-                                .frame(width: 160, height: 160)
+}
+
+struct WardrobeCard: View {
+    let image: UIImage
+    
+    var body: some View {
+        VStack {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 160, height: 160)
+                .cornerRadius(10)
+        }
+        .frame(width: 180, height: 180)
+        .background(Color.gray.opacity(0.2))
+        .cornerRadius(13)
+    }
+}
+
+struct UploadClothesSheet: View {
+    var selectedCategory: String
+    @Binding var selectedImages: [UIImage]
+    @EnvironmentObject private var wardrobeData: WardrobeData
+    @State private var isImagePickerPresented = false
+    @State private var isCameraPresented = false
+    @State private var showPermissionAlert = false
+    
+    var body: some View {
+        VStack {
+            Text("Upload new clothes")
+                .font(.headline)
+                .padding(.top)
+            
+            HStack(spacing: 20) {
+                Button(action: {
+                    checkCameraPermission()
+                }) {
+                    ZStack(alignment: .topLeading) {
+                        RoundedRectangle(cornerRadius: 15)
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(width: 160, height: 160)
+                        
+                        VStack(alignment: .leading) {
+                            Image(systemName: "camera.fill")
+                                .font(.system(size: 30))
+                                .foregroundColor(.black)
+                                .padding(10)
                             
-                            VStack(alignment: .leading) {
-                                Image(systemName: "camera.fill")
-                                    .font(.system(size: 30))
-                                    .foregroundColor(.black)
-                                    .padding(10)
-                                
-                                Spacer()
-                                
-                                Text("Take Photo")
-                                    .font(.callout)
-                                    .foregroundColor(.black)
-                                    .padding(10)
-                            }
-                            .frame(width: 160, height: 160, alignment: .leading)
-                        }
-                    }
-                    
-                    // **Upload Photo Card**
-                    Button(action: { isImagePickerPresented.toggle() }) {
-                        ZStack(alignment: .topLeading) {
-                            RoundedRectangle(cornerRadius: 15)
-                                .fill(Color.gray.opacity(0.3)) // Light gray background
-                                .frame(width: 160, height: 160)
+                            Spacer()
                             
-                            VStack(alignment: .leading) {
-                                Image(systemName: "photo.fill")
-                                    .font(.system(size: 30))
-                                    .foregroundColor(.black)
-                                    .padding(10)
-                                
-                                Spacer()
-                                
-                                Text("Upload Photo")
-                                    .font(.callout)
-                                    .foregroundColor(.black)
-                                    .padding(10)
-                            }
-                            .frame(width: 160, height: 160, alignment: .leading)
+                            Text("Take Photo")
+                                .font(.callout)
+                                .foregroundColor(.black)
+                                .padding(10)
                         }
+                        .frame(width: 160, height: 160, alignment: .leading)
                     }
                 }
-                .padding(.top, 20)
-                
-                Spacer()
+                Button(action: { isImagePickerPresented.toggle() }) {
+                    ZStack(alignment: .topLeading) {
+                        RoundedRectangle(cornerRadius: 15)
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(width: 160, height: 160)
+                        
+                        VStack(alignment: .leading) {
+                            Image(systemName: "photo.fill")
+                                .font(.system(size: 30))
+                                .foregroundColor(.black)
+                                .padding(10)
+                            
+                            Spacer()
+                            
+                            Text("Upload Photos")
+                                .font(.callout)
+                                .foregroundColor(.black)
+                                .padding(10)
+                        }
+                        .frame(width: 160, height: 160, alignment: .leading)
+                    }
+                }
             }
-            .sheet(isPresented: $isImagePickerPresented) {
-                ImagePicker(sourceType: .photoLibrary) { image in
+            .padding(.top, 20)
+            
+            Spacer()
+        }
+        .sheet(isPresented: $isImagePickerPresented) {
+            ImagePicker(images: $selectedImages)
+                .onDisappear {
+                    if !selectedImages.isEmpty {
+                        wardrobeData.wardrobeItems[selectedCategory]?.append(contentsOf: selectedImages)
+                        selectedImages.removeAll()
+                    }
+                }
+        }
+        .fullScreenCover(isPresented: $isCameraPresented) {
+            CameraView { image in
+                if let image = image {
                     wardrobeData.wardrobeItems[selectedCategory]?.append(image)
                 }
             }
-            .fullScreenCover(isPresented: $isCameraPresented) {
-                ImagePicker(sourceType: .camera) { image in
-                    wardrobeData.wardrobeItems[selectedCategory]?.append(image)
-                }
-            }
+        }
+        .alert(isPresented: $showPermissionAlert) {
+            Alert(
+                title: Text("Camera Access Required"),
+                message: Text("Please enable camera access in Settings to use this feature."),
+                primaryButton: .default(Text("Open Settings"), action: openSettings),
+                secondaryButton: .cancel()
+            )
         }
     }
     
-    // **Custom Image Picker**
-    struct ImagePicker: UIViewControllerRepresentable {
-        var sourceType: UIImagePickerController.SourceType
-        var completion: (UIImage) -> Void
-        
-        func makeUIViewController(context: Context) -> UIImagePickerController {
-            let picker = UIImagePickerController()
-            picker.sourceType = sourceType
-            picker.delegate = context.coordinator
-            return picker
-        }
-        
-        func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
-        
-        func makeCoordinator() -> Coordinator {
-            return Coordinator(self)
-        }
-        
-        class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-            let parent: ImagePicker
-            
-            init(_ parent: ImagePicker) {
-                self.parent = parent
-            }
-            
-            func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
-                if let image = info[.originalImage] as? UIImage {
-                    parent.completion(image)
+    func checkCameraPermission() {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            isCameraPresented.toggle()
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                DispatchQueue.main.async {
+                    if granted {
+                        isCameraPresented.toggle()
+                    } else {
+                        showPermissionAlert = true
+                    }
                 }
-                picker.dismiss(animated: true)
             }
+        case .denied, .restricted:
+            showPermissionAlert = true
+        @unknown default:
+            break
         }
     }
+    
+    func openSettings() {
+        if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(settingsURL)
+        }
+    }
+}
 
+struct ImagePicker: UIViewControllerRepresentable {
+    @Binding var images: [UIImage]
+    
+    func makeUIViewController(context: Context) -> PHPickerViewController {
+        var configuration = PHPickerConfiguration()
+        configuration.filter = .images
+        configuration.selectionLimit = 0
+        
+        let picker = PHPickerViewController(configuration: configuration)
+        picker.delegate = context.coordinator
+        return picker
+    }
+    
+    func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, PHPickerViewControllerDelegate {
+        let parent: ImagePicker
+        
+        init(_ parent: ImagePicker) {
+            self.parent = parent
+        }
+        
+        func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+            parent.images.removeAll()
+            
+            for result in results {
+                if result.itemProvider.canLoadObject(ofClass: UIImage.self) {
+                    result.itemProvider.loadObject(ofClass: UIImage.self) { (image, error) in
+                        if let image = image as? UIImage {
+                            DispatchQueue.main.async {
+                                self.parent.images.append(image)
+                            }
+                        }
+                    }
+                }
+            }
+            
+            picker.dismiss(animated: true)
+        }
+    }
+}
+
+struct CameraView: UIViewControllerRepresentable {
+    var completion: (UIImage?) -> Void
+    
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.delegate = context.coordinator
+        return picker
+    }
+    
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: CameraView
+        
+        init(_ parent: CameraView) {
+            self.parent = parent
+        }
+        
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+            if let image = info[.originalImage] as? UIImage {
+                parent.completion(image)
+            } else {
+                parent.completion(nil)
+            }
+            picker.dismiss(animated: true)
+        }
+        
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.completion(nil)
+            picker.dismiss(animated: true)
+        }
+    }
+}
