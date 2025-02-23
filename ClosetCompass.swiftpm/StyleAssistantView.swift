@@ -35,7 +35,7 @@ struct StyleAssistantView: View {
                                 .transition(.opacity)
                         }
                         if currentQuestionIndex >= questions.count {
-                            FeedbackCard(feedback: generateFeedback(), onRestart: restart)
+                            FeedbackCard(onRestart: restart, userAnswers: userAnswers)
                         }
                     }
                     .padding()
@@ -75,58 +75,6 @@ struct StyleAssistantView: View {
         }
     }
     
-    private func generateFeedback() -> String {
-        let occasion = userAnswers[0]
-        let color = userAnswers[1]
-        let weather = userAnswers[2]
-        let preference = userAnswers[3]
-        let footwear = userAnswers[4]
-        
-        return """
-        🌟 Your Perfect Outfit Suggestion
-            
-        • Occasion: \(occasion)
-        • Preferred Color: \(color)
-        • Weather Consideration: \(weather)
-        • Comfort vs Style: \(preference)
-        • Recommended Footwear: \(footwear)
-            
-        Suggested Look:
-        \(generateOutfitSuggestion(occasion: occasion, color: color, weather: weather, preference: preference, footwear: footwear))
-            
-        👕 Tap below to start over!
-        """
-    }
-    
-    private func generateOutfitSuggestion(occasion: String, color: String, weather: String, preference: String, footwear: String) -> String {
-        var outfit = ""
-
-        switch occasion {
-        case "Casual":
-            outfit = "\(color) comfy t-shirt with relaxed-fit jeans"
-        case "Formal":
-            outfit = "\(color) well-fitted blazer with dress pants"
-        case "Party":
-            outfit = "\(color) stylish top with sleek trousers"
-        case "Workout":
-            outfit = "\(color) activewear with breathable fabric"
-        case "Business":
-            outfit = "\(color) button-up shirt with chinos"
-        default:
-            outfit = "A trendy mix of \(color) shades"
-        }
-        
-        if preference == "Comfort" {
-            outfit += ", paired with a cozy sweater"
-        } else if preference == "Style" {
-            outfit += ", accessorized with a statement belt"
-        }
-        
-        outfit += " and matching \(footwear.lowercased())."
-
-        return outfit
-    }
-
     private func restart() {
         withAnimation {
             currentQuestionIndex = 0
@@ -223,13 +171,12 @@ struct OptionButtonStyle: ButtonStyle {
 }
 
 struct FeedbackCard: View {
-    let feedback: String
     let onRestart: () -> Void
+    let userAnswers: [String]
     
     var body: some View {
         VStack(spacing: 20) {
-            Text(feedback)
-                .font(.body)
+            FeedbackView(userAnswers: userAnswers)
                 .padding()
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(15)
@@ -240,6 +187,90 @@ struct FeedbackCard: View {
             .buttonStyle(PrimaryButtonStyle())
         }
         .padding()
+    }
+}
+
+struct FeedbackView: View {
+    let userAnswers: [String]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Your Perfect Outfit Suggestion")
+                .font(.title3)
+                .bold()
+                .foregroundColor(.black)
+            
+            Text("• Occasion: \(userAnswers[0])")
+                .font(.body)
+                .bold()
+                .foregroundColor(.black)
+                .opacity(0.7)
+            
+            Text("• Preferred Color: \(userAnswers[1])")
+                .font(.body)
+                .bold()
+                .foregroundColor(.black)
+                .opacity(0.7)
+            
+            Text("• Weather Consideration: \(userAnswers[2])")
+                .font(.body)
+                .bold()
+                .foregroundColor(.black)
+                .opacity(0.7)
+            
+            Text("• Comfort vs Style: \(userAnswers[3])")
+                .font(.body)
+                .bold()
+                .foregroundColor(.black)
+                .opacity(0.7)
+            
+            Text("• Recommended Footwear: \(userAnswers[4])")
+                .font(.body)
+                .bold()
+                .foregroundColor(.black)
+                .opacity(0.7)
+            
+            Text("Suggested Look:")
+                .font(.headline)
+                .bold()
+                .foregroundColor(.black)
+            
+            Text(generateOutfitSuggestion(occasion: userAnswers[0], color: userAnswers[1], weather: userAnswers[2], preference: userAnswers[3], footwear: userAnswers[4]))
+                .font(.body)
+                .foregroundColor(.black)
+                .opacity(0.7)
+            
+         
+        }
+    }
+    
+    private func generateOutfitSuggestion(occasion: String, color: String, weather: String, preference: String, footwear: String) -> String {
+        var outfit = ""
+
+        switch occasion {
+        case "Casual":
+            outfit = "\(color) comfy t-shirt with relaxed-fit jeans"
+        case "Formal":
+            outfit = "\(color) well-fitted blazer with dress pants"
+        case "Party":
+            outfit = "\(color) stylish top with sleek trousers"
+        case "Workout":
+            outfit = "\(color) activewear with breathable fabric"
+        case "Business":
+            outfit = "\(color) button-up shirt with chinos"
+        default:
+            outfit = "A trendy mix of \(color) shades"
+        }
+        
+        if preference == "Comfort" {
+            outfit += ", paired with a cozy sweater"
+        } else if preference == "Style" {
+            outfit += ", accessorized with a statement belt"
+        }
+        
+        outfit += " and matching \(footwear.lowercased())."
+
+        return outfit
     }
 }
 
@@ -255,3 +286,5 @@ struct PrimaryButtonStyle: ButtonStyle {
             .scaleEffect(configuration.isPressed ? 0.95 : 1)
     }
 }
+
+

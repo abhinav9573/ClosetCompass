@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct LaunchScreenView: View {
-    @State private var wardrobeName: String = ""
+    @State private var wardrobeName: String = "My Wardrobe"
     @State private var isShowingMainApp = false
     @State private var showValidationAlert = false
     

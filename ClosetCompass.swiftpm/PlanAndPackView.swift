@@ -35,21 +35,23 @@ struct PlanAndPackView: View {
                                     Spacer()
                                     Image(systemName: "suitcase.rolling.fill")
                                         .font(.title)
-                                        .foregroundColor(.blue)
+                                        .foregroundColor(.black)
                                         .opacity(0.8)
                                 }
                                 
                                 Text("\(trip.date.formatted(date: .abbreviated, time: .omitted)) - \(trip.days) day\(trip.days > 1 ? "s" : "")")
                                     .font(.subheadline)
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(.black)
+                                    .opacity(0.7)
                                 Text("\(trip.packedItems.values.flatMap { $0 }.count) items packed")
                                     .font(.caption)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.black)
+                                    .opacity(0.7)
                             }
                             .padding()
                             .background(
                                 LinearGradient(
-                                    gradient: Gradient(colors: [Color.blue.opacity(0.1), Color.blue.opacity(0.05)]),
+                                    gradient: Gradient(colors: [Color.gray.opacity(0.1), Color.gray.opacity(0.05)]),
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -57,9 +59,9 @@ struct PlanAndPackView: View {
                             .cornerRadius(15)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 15)
-                                    .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                                    .stroke(Color.gray.opacity(0.5), lineWidth: 1)
                             )
-                            .shadow(color: Color.blue.opacity(0.1), radius: 5, x: 0, y: 2)
+                            .shadow(color: Color.gray.opacity(0.1), radius: 5, x: 0, y: 2)
                             .padding(.horizontal)
                             .padding(.vertical, 5)
                         }
@@ -84,7 +86,6 @@ struct PlanAndPackView: View {
         }
     }
 }
-
 struct PlanTripForm: View {
     @Binding var trips: [Trip]
     @Environment(\.presentationMode) var presentationMode
@@ -103,8 +104,8 @@ struct PlanTripForm: View {
             Form {
                 Section(header: Text("Trip Details")) {
                     TextField("Trip Name", text: $tripName)
-                    DatePicker("Date", selection: $tripDate, displayedComponents: .date)
-                    Stepper("No. Of Days: \(numberOfDays)", value: $numberOfDays, in: 1...30)
+                    DatePicker("Start Date", selection: $tripDate, displayedComponents: .date)
+                    Stepper("No. Of Days:  \(numberOfDays)", value: $numberOfDays, in: 1...30)
                 }
                 
                 Section(header: Text("Pack Your Clothes")) {
