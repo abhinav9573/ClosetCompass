@@ -8,13 +8,16 @@ import PackageDescription
 import AppleProductTypes
 
 let package = Package(
+
     name: "ClosetCompass",
     platforms: [
         .iOS("16.0")
     ],
     products: [
         .iOSApplication(
+
             name: "ClosetCompass",
+
             targets: ["AppModule"],
             bundleIdentifier: "com.example..QuickStyle",
             teamIdentifier: "73479W4Y8N",
@@ -22,6 +25,7 @@ let package = Package(
             bundleVersion: "1",
             appIcon: .asset("AppIcon"),
             accentColor: .asset("AccentColor"),
+
             supportedDeviceFamilies: [
                 .pad,
                 .phone
@@ -35,6 +39,7 @@ let package = Package(
             capabilities: [
                 .camera(purposeString: "We need access to your camera to take photos for your wardrobe.")
             ],
+
             appCategory: .lifestyle
         )
     ],
