@@ -1,12 +1,25 @@
 import SwiftUI
 
 struct ContentView: View {
+    var wardrobeName: String
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
-        }
+            TabView {
+                WardrobeView(wardrobeName: wardrobeName)
+                    .tabItem {
+                        Label("My Wardrobe", systemImage: "hanger")
+                            .foregroundColor(.black)
+                    }
+                PlanAndPackView()
+                    .tabItem {
+                        Label("Plan & Pack", systemImage: "suitcase.rolling.fill")
+                    }
+                StyleAssistantView()
+                                .tabItem {
+                                    Label("Style Assistant", systemImage: "message.fill")
+                                }
+               
+            }
+            .tint(.black)
+
     }
 }

@@ -8,20 +8,24 @@ import PackageDescription
 import AppleProductTypes
 
 let package = Package(
-    name: "QuickStyle",
+
+    name: "ClosetCompass",
     platforms: [
         .iOS("16.0")
     ],
     products: [
         .iOSApplication(
-            name: "QuickStyle",
+
+            name: "ClosetCompass",
+
             targets: ["AppModule"],
             bundleIdentifier: "com.example..QuickStyle",
             teamIdentifier: "73479W4Y8N",
             displayVersion: "1.0",
             bundleVersion: "1",
-            appIcon: .placeholder(icon: .bicycle),
-            accentColor: .presetColor(.cyan),
+            appIcon: .asset("AppIcon"),
+            accentColor: .asset("AccentColor"),
+
             supportedDeviceFamilies: [
                 .pad,
                 .phone
@@ -32,6 +36,10 @@ let package = Package(
                 .landscapeLeft,
                 .portraitUpsideDown(.when(deviceFamilies: [.pad]))
             ],
+            capabilities: [
+                .camera(purposeString: "We need access to your camera to take photos for your wardrobe.")
+            ],
+
             appCategory: .lifestyle
         )
     ],
