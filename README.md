@@ -1,4 +1,4 @@
-# ClosetCompass
+# ClosetCompass - iOS App
 
 ## Overview
 **ClosetCompass** is a digital wardrobe and personal wardrobe manager designed to simplify outfit selection and trip packing for fashion-conscious individuals and busy professionals. It allows users to organize, view, and plan their clothing digitally, saving time and reducing decision fatigue. The app also includes features like trip planning, packing lists, and a style assistant to provide personalized outfit suggestions.
